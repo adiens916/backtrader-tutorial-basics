@@ -1,3 +1,7 @@
+"""
+https://cafe.naver.com/songspread/7411
+"""
+
 import pandas as pd
 import backtrader as bt
 from datetime import datetime
@@ -5,7 +9,7 @@ import backtrader.feeds as btfeeds
 
 # 1. 데이터 읽기 및 필터링
 # SOXL.txt 파일이 OHLCV 형식(날짜, Open, High, Low, Close, Volume)으로 되어 있다고 가정
-df = pd.read_csv("SOXL.txt", parse_dates=["Date"], index_col="Date")
+df = pd.read_csv("data/SOXL.txt", parse_dates=["Date"], index_col="Date", sep="\t")
 
 # 2011-01-01 ~ 2020-12-31 데이터 필터링 (인덱스가 Date 컬럼이라고 가정)
 start_date = datetime(2011, 1, 1)
