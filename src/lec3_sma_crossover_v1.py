@@ -27,6 +27,10 @@ class SMACrossover(bt.Strategy):
         self.crossover = bt.indicators.CrossOver(self.fast_sma, self.slow_sma)
 
     def next(self):
+        """
+        주문이 시장가로 주문되고 **다음 캔들 바**의 시가에 주문이 실행된다는 것을 말씀드렸습니다.
+        그렇다면 매수/매도 주문을 내는 시점의 날짜도 출력시켜보면 이를 확인해 볼 수 있습니다.
+        """
         if self.order:
             return
 
@@ -35,11 +39,17 @@ class SMACrossover(bt.Strategy):
             # 단기 이동평균선이 장기 이동평균선을 상향 돌파 (골든 크로스)
             if self.crossover > 0:
                 self.order = self.buy()
+                print(
+                    f"BUY CREATED, Date: {self.data.datetime.date(0)}, Fast SMA: {self.fast_sma[0]:.2f}, Slow SMA: {self.slow_sma[0]:.2f}, Close: {self.dataclose[0]:.2f}"
+                )
         # 포지션이 있을 때
         else:
             # 단기 이동평균선이 장기 이동평균선을 하향 돌파 (데드 크로스)
             if self.crossover < 0:
                 self.order = self.sell()
+                print(
+                    f"SELL CREATED, Date: {self.data.datetime.date(0)}, Fast SMA: {self.fast_sma[0]:.2f}, Slow SMA: {self.slow_sma[0]:.2f}, Close: {self.dataclose[0]:.2f}"
+                )
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -48,11 +58,11 @@ class SMACrossover(bt.Strategy):
         if order.status in [order.Completed]:
             if order.isbuy():
                 print(
-                    f"BUY EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"BUY EXECUTED, Date: {self.data.datetime.date(0)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
                 )
             elif order.issell():
                 print(
-                    f"SELL EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"SELL EXECUTED, Date: {self.data.datetime.date(0)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
                 )
 
             self.bar_executed = len(self)
