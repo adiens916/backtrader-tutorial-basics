@@ -50,8 +50,6 @@ class SMACrossover(bt.Strategy):
                 print(
                     f"BUY EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
                 )
-                self.buyprice = order.executed.price
-                self.buycomm = order.executed.comm
             elif order.issell():
                 print(
                     f"SELL EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
@@ -80,9 +78,6 @@ if __name__ == "__main__":
 
     # Pandas를 이용하여 SOXL.txt 파일 읽기
     df = pd.read_csv("data/SOXL.txt", index_col="Date", parse_dates=True, sep="\t")
-
-    # 데이터 필터링 (2011년 1월 1일부터 2020년 12월 31일까지)
-    df = df[(df.index >= "2011-01-01") & (df.index <= "2020-12-31")]
 
     # Backtrader용 데이터 피드 생성
     data = bt.feeds.PandasData(
