@@ -27,6 +27,10 @@ class SMACrossover(bt.Strategy):
         self.crossover = bt.indicators.CrossOver(self.fast_sma, self.slow_sma)
 
     def next(self):
+        """
+        주문이 시장가로 주문되고 **다음 캔들 바**의 시가에 주문이 실행된다는 것을 말씀드렸습니다.
+        그렇다면 매수/매도 주문을 내는 시점의 날짜도 출력시켜보면 이를 확인해 볼 수 있습니다.
+        """
         if self.order:
             return
 
@@ -35,11 +39,17 @@ class SMACrossover(bt.Strategy):
             # 단기 이동평균선이 장기 이동평균선을 상향 돌파 (골든 크로스)
             if self.crossover > 0:
                 self.order = self.buy()
+                print(
+                    f"BUY CREATED, Date: {self.data.datetime.date(0)}, Fast SMA: {self.fast_sma[0]:.2f}, Slow SMA: {self.slow_sma[0]:.2f}, Close: {self.dataclose[0]:.2f}"
+                )
         # 포지션이 있을 때
         else:
             # 단기 이동평균선이 장기 이동평균선을 하향 돌파 (데드 크로스)
             if self.crossover < 0:
                 self.order = self.sell()
+                print(
+                    f"SELL CREATED, Date: {self.data.datetime.date(0)}, Fast SMA: {self.fast_sma[0]:.2f}, Slow SMA: {self.slow_sma[0]:.2f}, Close: {self.dataclose[0]:.2f}"
+                )
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -47,14 +57,20 @@ class SMACrossover(bt.Strategy):
 
         if order.status in [order.Completed]:
             if order.isbuy():
+                """
+                둘째 날 Cost는 0.97.
+                이와 관계없이 원래는 둘째 날에 총자산(Value)가 100000.00이 되어야 하는데,
+                실행해보면 둘째 날에 Value가 99999.97로 나옴.
+                왜냐하면 자산 계산 시 다음 날 종가를 기준으로 계산했기 때문.
+                즉, 출력되는 날짜만 직전 일.
+                추후 수정 필요.
+                """
                 print(
-                    f"BUY EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"BUY EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
                 )
-                self.buyprice = order.executed.price
-                self.buycomm = order.executed.comm
             elif order.issell():
                 print(
-                    f"SELL EXECUTED, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"SELL EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
                 )
 
             self.bar_executed = len(self)
@@ -81,8 +97,10 @@ if __name__ == "__main__":
     # Pandas를 이용하여 SOXL.txt 파일 읽기
     df = pd.read_csv("data/SOXL.txt", index_col="Date", parse_dates=True, sep="\t")
 
-    # 데이터 필터링 (2011년 1월 1일부터 2020년 12월 31일까지)
-    df = df[(df.index >= "2011-01-01") & (df.index <= "2020-12-31")]
+    # 실수형 컬럼들을 소수점 아래 셋째 자리에서 반올림
+    for col in ["Open", "High", "Low", "Close", "Adj Close"]:
+        if col in df.columns:  # 존재하는 컬럼인지 확인
+            df[col] = df[col].round(2)  # 소수점 둘째 자리까지 반올림
 
     # Backtrader용 데이터 피드 생성
     data = bt.feeds.PandasData(
@@ -94,6 +112,12 @@ if __name__ == "__main__":
 
     # 데이터 피드 추가
     cerebro.adddata(data)
+
+    # 고정 수량 매매
+    cerebro.addsizer(bt.sizers.FixedSize, stake=20)
+
+    # Cheat-on-close 설정 (종가 체결)
+    cerebro.broker.set_coc(True)
 
     # 초기 자본 설정
     cerebro.broker.setcash(100000.0)
