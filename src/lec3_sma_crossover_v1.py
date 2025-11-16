@@ -57,12 +57,20 @@ class SMACrossover(bt.Strategy):
 
         if order.status in [order.Completed]:
             if order.isbuy():
+                """
+                둘째 날 Cost는 0.97.
+                이와 관계없이 원래는 둘째 날에 총자산(Value)가 100000.00이 되어야 하는데,
+                실행해보면 둘째 날에 Value가 99999.97로 나옴.
+                왜냐하면 자산 계산 시 다음 날 종가를 기준으로 계산했기 때문.
+                즉, 출력되는 날짜만 직전 일.
+                추후 수정 필요.
+                """
                 print(
-                    f"BUY EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"BUY EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
                 )
             elif order.issell():
                 print(
-                    f"SELL EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"SELL EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
                 )
 
             self.bar_executed = len(self)
