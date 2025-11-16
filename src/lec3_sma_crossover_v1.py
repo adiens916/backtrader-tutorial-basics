@@ -97,6 +97,11 @@ if __name__ == "__main__":
     # Pandas를 이용하여 SOXL.txt 파일 읽기
     df = pd.read_csv("data/SOXL.txt", index_col="Date", parse_dates=True, sep="\t")
 
+    # 실수형 컬럼들을 소수점 아래 셋째 자리에서 반올림
+    for col in ["Open", "High", "Low", "Close", "Adj Close"]:
+        if col in df.columns:  # 존재하는 컬럼인지 확인
+            df[col] = df[col].round(2)  # 소수점 둘째 자리까지 반올림
+
     # Backtrader용 데이터 피드 생성
     data = bt.feeds.PandasData(
         dataname=df,
@@ -107,6 +112,9 @@ if __name__ == "__main__":
 
     # 데이터 피드 추가
     cerebro.adddata(data)
+
+    # 고정 수량 매매
+    cerebro.addsizer(bt.sizers.FixedSize, stake=20)
 
     # Cheat-on-close 설정 (종가 체결)
     cerebro.broker.set_coc(True)
