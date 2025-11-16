@@ -1,5 +1,7 @@
 """
 https://cafe.naver.com/songspread/7411
+
+Grok4로 만들었는데, 링크에 나온 것과 좀 다름.
 """
 
 import pandas as pd
