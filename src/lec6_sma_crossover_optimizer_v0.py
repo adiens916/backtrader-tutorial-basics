@@ -43,52 +43,12 @@ class SMACrossover(bt.Strategy):
             if self.crossover < 0:
                 self.order = self.sell()
 
-    def notify_order(self, order):
-        if order.status in [order.Submitted, order.Accepted]:
-            return
-
-        if order.status in [order.Completed]:
-            if order.isbuy():
-                """
-                둘째 날 Cost는 0.97.
-                이와 관계없이 원래는 둘째 날에 총자산(Value)가 100000.00이 되어야 하는데,
-                실행해보면 둘째 날에 Value가 99999.97로 나옴.
-                왜냐하면 자산 계산 시 다음 날 종가를 기준으로 계산했기 때문.
-                즉, 출력되는 날짜만 직전 일.
-                추후 수정 필요.
-                """
-                pass
-                # print(
-                #     f"BUY EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
-                # )
-
-            elif order.issell():
-                pass
-                # print(
-                #     f"SELL EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}, Cash: {self.broker.get_cash():.2f}, Value: {self.broker.get_value():.2f}"
-                # )
-
-            self.bar_executed = len(self)
-
-        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            pass
-            # print("Order Canceled/Margin/Rejected")
-
-        self.order = None
-
-    def notify_trade(self, trade):
-        if not trade.isclosed:
-            return
-        pass
-        # print(f"OPERATION PROFIT, GROSS {trade.pnl:.2f}, NET {trade.pnlcomm:.2f}")
-
 
 # 2. Cerebro 엔진 설정 및 데이터 로드
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
 
     # 최적화 전략 추가 (fast_length: 5~30 step 5, slow_length: 20~100 step 10)
-    # OptReturn 객체로 결과가 반환되므로, 루프에서 analyzers 접근
     cerebro.optstrategy(
         SMACrossover, fast_length=range(5, 31, 5), slow_length=range(20, 101, 10)
     )
@@ -146,6 +106,7 @@ if __name__ == "__main__":
             if strat.params.fast_length >= strat.params.slow_length:
                 continue
 
+            # OptReturn 객체로 결과가 반환되므로, 루프에서 analyzers 접근
             rets = strat.analyzers.returns.get_analysis()
             current_return = (
                 rets["rtot"] * 100 if "rtot" in rets else 0
