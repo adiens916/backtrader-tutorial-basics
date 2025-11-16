@@ -58,11 +58,11 @@ class SMACrossover(bt.Strategy):
         if order.status in [order.Completed]:
             if order.isbuy():
                 print(
-                    f"BUY EXECUTED, Date: {self.data.datetime.date(0)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"BUY EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
                 )
             elif order.issell():
                 print(
-                    f"SELL EXECUTED, Date: {self.data.datetime.date(0)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
+                    f"SELL EXECUTED, Date: {self.data.datetime.date(-1)}, Price: {order.executed.price:.2f}, Cost: {order.executed.value:.2f}, Comm: {order.executed.comm:.2f}"
                 )
 
             self.bar_executed = len(self)
@@ -99,6 +99,9 @@ if __name__ == "__main__":
 
     # 데이터 피드 추가
     cerebro.adddata(data)
+
+    # Cheat-on-close 설정 (종가 체결)
+    cerebro.broker.set_coc(True)
 
     # 초기 자본 설정
     cerebro.broker.setcash(100000.0)
