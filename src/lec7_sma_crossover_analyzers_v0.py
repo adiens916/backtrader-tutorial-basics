@@ -19,7 +19,6 @@ class SMACrossover(bt.Strategy):
 
     def __init__(self):
         self.dataclose = self.datas[0].close
-        self.order = None
         # 이동평균선 지표 생성
         self.fast_sma = bt.indicators.SMA(self.dataclose, period=self.p.fast_length)
         self.slow_sma = bt.indicators.SMA(self.dataclose, period=self.p.slow_length)
@@ -27,33 +26,17 @@ class SMACrossover(bt.Strategy):
         self.crossover = bt.indicators.CrossOver(self.fast_sma, self.slow_sma)
 
     def next(self):
-        if self.order:
-            return
         # 매수/매도 로직
         if not self.position:  # 포지션이 없을 때
             # 단기 이동평균선이 장기 이동평균선을 상향 돌파 (골든 크로스)
             if self.crossover > 0:
-                self.order = self.buy()
+                self.buy()
 
         # 포지션이 있을 때
         else:
             # 단기 이동평균선이 장기 이동평균선을 하향 돌파 (데드 크로스)
             if self.crossover < 0:
-                self.order = self.sell()
-
-    def notify_order(self, order):
-        if order.status in [order.Submitted, order.Accepted]:
-            return
-        if order.status in [order.Completed]:
-            self.bar_executed = len(self)
-        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            pass  # 출력 제거
-        self.order = None
-
-    def notify_trade(self, trade):
-        if not trade.isclosed:
-            return
-        pass  # 출력 제거
+                self.sell()
 
 
 # 2. Cerebro 엔진 설정 및 데이터 로드
