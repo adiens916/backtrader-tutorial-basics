@@ -74,7 +74,10 @@ if __name__ == "__main__":
     cerebro.broker.setcommission(commission=0.001)
     # Analyzer 추가
     cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe", riskfreerate=0.0)
+
+    # 강의에서는 무위험 이자율(risk-free rate)을 따로 설정 안 함. 그러면 1%가 기본 값임.
+    # 이 경우 평균 초과수익이 거의 없거나 변동성이 커서 Sharpe가 크게 음수로 떨어짐.
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe")
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
 
     # 기간 계산
@@ -104,6 +107,8 @@ if __name__ == "__main__":
         # Sharpe Ratio
         sharpe_analysis = strat.analyzers.sharpe.get_analysis()
         sharpe_value = sharpe_analysis.get("sharperatio", 0.0)
+        # 위에서 키가 없으면 0을 반환하지만, 키는 항상 존재함.
+        # 그러나 키에 해당하는 값이 None인 경우가 있음. 이걸 처리 안 하면 출력문에서 에러 남.
         sharpe = 0.0 if sharpe_value is None else sharpe_value
 
         fast_length = strat.p.fast_length
