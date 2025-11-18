@@ -82,11 +82,6 @@ if __name__ == "__main__":
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe")
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
 
-    # 기간 계산
-    start_date = datetime(2011, 1, 1)
-    end_date = datetime(2020, 12, 31)
-    years = (end_date - start_date).days / 365.25
-
     # 초기 자본 출력
     print(f"초기 자본: {cerebro.broker.getvalue():.2f}")
 
@@ -100,10 +95,9 @@ if __name__ == "__main__":
     # 성과 지표 분석
     strat = results[0]
 
-    # CAGR 계산
+    # 1. CAGR (%) - Returns 분석기의 rnorm100 (연환산 복리 수익률)
     returns_analysis = strat.analyzers.returns.get_analysis()
-    rtot = returns_analysis.get("rtot", 0.0)
-    cagr = ((1 + rtot) ** (1 / years) - 1) * 100
+    cagr = returns_analysis.get("rnorm100", 0.0)  # 기본값 0.0으로 안전 처리
 
     # MDD (Maximum Drawdown)
     drawdown_analysis = strat.analyzers.drawdown.get_analysis()
@@ -124,7 +118,7 @@ if __name__ == "__main__":
     print(
         f"파라미터: bb_period={strat.p.bb_period}, bb_devfactor={strat.p.bb_devfactor}"
     )
-    print(f"총 수익률: {rtot*100:.2f}%")
+    # print(f"총 수익률: {rtot*100:.2f}%")
     print(f"CAGR: {cagr:.2f}%")
     print(f"MDD: {mdd:.2f}%")
     print(f"Calmar Ratio: {calmar:.2f}")
