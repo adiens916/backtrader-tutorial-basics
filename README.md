@@ -10,10 +10,34 @@ Backtrader (주식 백테스팅 프레임워크) 강의 따라해보기.
 강의에 나온 프롬프트를 AI에 입력하여, 스스로 어디까지 만들 수 있나 실험해봄.
 
 
-## 설치
-필요 라이브러리
+## 설치 및 환경 구성
+
+### 1. 가상환경 생성 (권장)
+프로젝트별로 독립된 환경을 사용하는 것을 권장
+
+**Conda 사용 시:**
 ```bash
-pip install backtrader pandas matplotlib
+conda create -n backtest python=3.12
+conda activate backtest
+```
+
+**venv 사용 시:**
+```bash
+python -m venv .venv
+source .venv/Scripts/activate  # Windows
+# source .venv/bin/activate    # Mac/Linux
+```
+
+### 2. 패키지 설치
+제공된 `requirements.txt`를 사용하여 필요한 라이브러리를 한 번에 설치 가능
+
+```bash
+pip install -r requirements.txt
+```
+
+**직접 설치 시:**
+```bash
+pip install backtrader pandas matplotlib yfinance
 ```
 
 
@@ -49,34 +73,34 @@ backtrader-tutorial/
 - `cerebro.optstrategy()`에 전략과 패러미터 목록을 넣고,  
 `results = cerebro.run()`에서 results를 순회하면 됨.  
 그 후 전략에 저장된 값을 불러와서 비교 가능.
-```python
-for result in results:
-    strat = result[0]
-    strat.params.fast_length  # 20일선
-    strat.params.slow_length  # 50일선
-```
+  ```python
+  for result in results:
+      strat = result[0]
+      strat.params.fast_length  # 20일선
+      strat.params.slow_length  # 50일선
+  ```
 
 ### 7강: 성과 평가 지표
 - 평가 지표는 `cerebro.addanalyzer()`에 분석기 추가 가능.  
 이때 `_name` 인자에 저장된 이름으로, 추후 `strat`에서 불러올 수 있음.
-```python
-cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")
+  ```python
+  cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")
 
-# (중략)
+  # (중략)
 
-rets = strat.analyzers.returns.get_analysis()
-current_return = (rets["rtot"] * 100 if "rtot" in rets else 0)  # 총 수익률 (%)
-```
+  rets = strat.analyzers.returns.get_analysis()
+  current_return = (rets["rtot"] * 100 if "rtot" in rets else 0)  # 총 수익률 (%)
+  ```
 
 - CAGR은 8강 참고하기. 그쪽에서 훨씬 간결하게 작성함.
 - SharpeRatio 분석기 추가할 때 **`riskfreerate`** 값 설정 주의. 결과 크게 달라짐.
 - 값 불러올 때 `sharperatio` 키는 있는데 값은 None인 경우가 있음. 따로 처리해줘야 함.
-```python
-sharpe_value = sharpe_analysis.get("sharperatio", 0.0)
-# 위에서 키가 없으면 0을 반환하지만, 키는 항상 존재함.
-# 그러나 키에 해당하는 값이 None인 경우가 있음. 이걸 처리 안 하면 출력문에서 에러 남.
-sharpe = 0.0 if sharpe_value is None else sharpe_value
-```
+  ```python
+  sharpe_value = sharpe_analysis.get("sharperatio", 0.0)
+  # 위에서 키가 없으면 0을 반환하지만, 키는 항상 존재함.
+  # 그러나 키에 해당하는 값이 None인 경우가 있음. 이걸 처리 안 하면 출력문에서 에러 남.
+  sharpe = 0.0 if sharpe_value is None else sharpe_value
+  ```
 
 ### 8강: 다양한 전략
 각 파일들 참고. 사실상 Strategy 클래스만 바꿔 끼면 된다.

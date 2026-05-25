@@ -1,0 +1,8 @@
+backtrader
+pandas
+matplotlib
+yfinance
+scikit-learn
+scipy
+seaborn
+tqdm
